@@ -1,0 +1,1501 @@
+# DSA Arrays — Days 1–4
+
+## Patterns Covered
+
+- Basic Array Traversal
+- Running State
+- Two Pointers
+- Write Pointer
+- HashSet / HashMap
+- Prefix Sum
+- Running Sum
+- Time & Space Complexity
+
+---
+
+# 01 — Basic Traversal & Running State
+
+## 1. Find Smallest Element
+
+### Problem
+
+Given an unsorted array, find the smallest element.
+
+Example:
+
+```text
+Input:  [5, 2, 8, 1, 6]
+Output: 1
+```
+
+### Thinking
+
+Keep the first element as the smallest seen so far.
+
+Scan the remaining elements. Whenever we find something smaller, update `min`.
+
+### Solution
+
+```java
+public static int findSmallest(int[] arr) {
+    int min = arr[0];
+
+    for (int i = 1; i < arr.length; i++) {
+        if (arr[i] < min) {
+            min = arr[i];
+        }
+    }
+
+    return min;
+}
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(1)
+```
+
+### Remember
+
+For an **unsorted array**, finding minimum requires checking every element.
+
+---
+
+## 2. Second Largest Distinct Element
+
+### Problem
+
+Find the second-largest **distinct** element.
+
+```text
+Input:  [10, 5, 8, 10, 7]
+Output: 8
+```
+
+### Thinking
+
+Maintain:
+
+```text
+largest
+secondLargest
+```
+
+If a new largest appears:
+
+```text
+old largest → secondLargest
+new value   → largest
+```
+
+Duplicates of `largest` should not count.
+
+### Solution
+
+```java
+public static int findSecondLargest(int[] arr) {
+
+    if (arr == null || arr.length < 2) {
+        throw new IllegalArgumentException(
+                "Array must contain at least two elements"
+        );
+    }
+
+    int largest = arr[0];
+    int secondLargest = Integer.MIN_VALUE;
+    boolean secondLargestFound = false;
+
+    for (int i = 1; i < arr.length; i++) {
+
+        if (arr[i] > largest) {
+
+            secondLargest = largest;
+            largest = arr[i];
+            secondLargestFound = true;
+
+        } else if (arr[i] < largest && arr[i] > secondLargest) {
+
+            secondLargest = arr[i];
+            secondLargestFound = true;
+        }
+    }
+
+    if (!secondLargestFound) {
+        throw new IllegalArgumentException(
+                "Second largest distinct element not found"
+        );
+    }
+
+    return secondLargest;
+}
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(1)
+```
+
+### Pattern
+
+**Running state / single-pass tracking**
+
+---
+
+## 3. Count Occurrences
+
+### Problem
+
+Count how many times a target occurs.
+
+```text
+arr    = [1, 2, 2, 3, 2]
+target = 2
+
+Output = 3
+```
+
+### Solution
+
+```java
+public static int countOccurrences(int[] arr, int target) {
+
+    int count = 0;
+
+    for (int value : arr) {
+        if (value == target) {
+            count++;
+        }
+    }
+
+    return count;
+}
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(1)
+```
+
+---
+
+## 4. Maximum Consecutive Ones
+
+### Problem
+
+Find the maximum number of consecutive `1`s.
+
+```text
+Input:  [1, 1, 0, 1, 1, 1]
+Output: 3
+```
+
+### Thinking
+
+Maintain:
+
+```text
+count   → current streak
+maxCons → best streak
+```
+
+When we see `1`:
+
+```text
+count++
+```
+
+When we see `0`:
+
+```text
+save maximum
+reset count
+```
+
+### Solution
+
+```java
+public static int maxConsecutiveOnes(int[] arr) {
+
+    int maxCons = 0;
+    int count = 0;
+
+    for (int i = 0; i < arr.length; i++) {
+
+        if (arr[i] == 1) {
+            count++;
+        } else {
+
+            if (count > maxCons) {
+                maxCons = count;
+            }
+
+            count = 0;
+        }
+    }
+
+    if (count > maxCons) {
+        maxCons = count;
+    }
+
+    return maxCons;
+}
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(1)
+```
+
+### Important
+
+Reset `count` only when the streak breaks.
+
+---
+
+# 02 — Two Pointers / Write Pointer
+
+## 5. Reverse Array In-Place
+
+### Problem
+
+```text
+Input:  [1, 2, 3, 4, 5]
+Output: [5, 4, 3, 2, 1]
+```
+
+### Thinking
+
+Use two pointers:
+
+```text
+left  → beginning
+right → end
+```
+
+Swap them and move inward.
+
+### Solution
+
+```java
+public static void reverseArray(int[] arr) {
+
+    int left = 0;
+    int right = arr.length - 1;
+
+    while (left < right) {
+
+        int temp = arr[left];
+        arr[left] = arr[right];
+        arr[right] = temp;
+
+        left++;
+        right--;
+    }
+}
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(1)
+```
+
+### Pattern
+
+**Opposite-direction Two Pointers**
+
+---
+
+## 6. Move Even Numbers Left and Odd Numbers Right
+
+### Problem
+
+Rearrange the array so that even numbers appear on the left and odd numbers on the right.
+
+Order does not matter.
+
+```text
+Input:
+[1, 2, 3, 4, 6, 5]
+
+Possible output:
+[6, 2, 4, 3, 1, 5]
+```
+
+### Thinking
+
+Use:
+
+```text
+left
+right
+```
+
+Rules:
+
+```text
+left is even  → left++
+right is odd  → right--
+
+left is odd AND right is even
+→ swap
+→ left++
+→ right--
+```
+
+### Solution
+
+```java
+public static void partitionEvenOdd(int[] arr) {
+
+    int left = 0;
+    int right = arr.length - 1;
+
+    while (left < right) {
+
+        if (arr[left] % 2 == 0) {
+            left++;
+
+        } else if (arr[right] % 2 != 0) {
+            right--;
+
+        } else {
+
+            int temp = arr[left];
+            arr[left] = arr[right];
+            arr[right] = temp;
+
+            left++;
+            right--;
+        }
+    }
+}
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(1)
+```
+
+---
+
+## 7. Move Zeroes to End
+
+### Problem
+
+Move all zeroes to the end while preserving the order of non-zero elements.
+
+```text
+Input:
+[0, 1, 0, 3, 12]
+
+Output:
+[1, 3, 12, 0, 0]
+```
+
+### Thinking
+
+Use:
+
+```text
+i         → scans array
+insertPos → position where next non-zero belongs
+```
+
+Whenever a non-zero is found, swap it with `insertPos`.
+
+### Solution
+
+```java
+public static void moveZeroes(int[] arr) {
+
+    int insertPos = 0;
+
+    for (int i = 0; i < arr.length; i++) {
+
+        if (arr[i] != 0) {
+
+            int temp = arr[i];
+            arr[i] = arr[insertPos];
+            arr[insertPos] = temp;
+
+            insertPos++;
+        }
+    }
+}
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(1)
+```
+
+### Pattern
+
+**Same-direction Two Pointers / Write Pointer**
+
+### Remember
+
+`insertPos` means:
+
+> Where should the next valid/non-zero element go?
+
+---
+
+## 8. Remove Duplicates from Sorted Array
+
+### Problem
+
+Remove duplicates in-place from a **sorted** array.
+
+```text
+Input:
+[1, 1, 2, 2, 2, 3, 3]
+
+Unique portion:
+[1, 2, 3]
+
+Return:
+3
+```
+
+### Thinking
+
+Because the array is sorted, duplicates are adjacent.
+
+Use a write pointer representing the last unique position.
+
+### Solution
+
+```java
+public static int removeDuplicates(int[] arr) {
+
+    if (arr.length == 0) {
+        return 0;
+    }
+
+    int writeUnique = 0;
+
+    for (int i = 1; i < arr.length; i++) {
+
+        if (arr[i] != arr[i - 1]) {
+
+            writeUnique++;
+            arr[writeUnique] = arr[i];
+        }
+    }
+
+    return writeUnique + 1;
+}
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(1)
+```
+
+### Recognition
+
+When you hear:
+
+```text
+sorted array + remove duplicates + in-place
+```
+
+think **Two Pointers / Write Pointer**.
+
+---
+
+# 03 — Hashing
+
+## 9. Contains Duplicate
+
+### Problem
+
+Determine whether an array contains a duplicate.
+
+```text
+Input:  [1, 2, 3, 1]
+Output: true
+```
+
+### Brute Force
+
+Compare every pair.
+
+```java
+public static boolean containsDuplicateBrute(int[] arr) {
+
+    for (int i = 0; i < arr.length; i++) {
+
+        for (int j = i + 1; j < arr.length; j++) {
+
+            if (arr[i] == arr[j]) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+```
+
+```text
+Time  : O(n²)
+Space : O(1)
+```
+
+### Optimized — HashSet
+
+```java
+public static boolean containsDuplicate(int[] arr) {
+
+    Set<Integer> seen = new HashSet<>();
+
+    for (int value : arr) {
+
+        if (seen.contains(value)) {
+            return true;
+        }
+
+        seen.add(value);
+    }
+
+    return false;
+}
+```
+
+### Complexity
+
+```text
+Average Time : O(n)
+Space        : O(n)
+```
+
+### Pattern
+
+Need to answer:
+
+> “Have I already seen this value?”
+
+Think **HashSet**.
+
+---
+
+## 10. Two Sum
+
+### Problem
+
+Find two indices whose values add up to `target`.
+
+```text
+arr    = [2, 7, 11, 15]
+target = 9
+
+Output = [0, 1]
+```
+
+### Brute Force
+
+Try every pair.
+
+```java
+public static int[] twoSumBrute(int[] arr, int target) {
+
+    for (int i = 0; i < arr.length; i++) {
+
+        for (int j = i + 1; j < arr.length; j++) {
+
+            if (arr[i] + arr[j] == target) {
+                return new int[]{i, j};
+            }
+        }
+    }
+
+    return new int[]{-1, -1};
+}
+```
+
+```text
+Time  : O(n²)
+Space : O(1)
+```
+
+### Optimized Thinking
+
+For current value:
+
+```text
+needed = target - current
+```
+
+Ask:
+
+> Have I already seen `needed`?
+
+Because we need the **index**, store:
+
+```text
+value → index
+```
+
+### Optimized Solution
+
+```java
+public static int[] twoSum(int[] arr, int target) {
+
+    Map<Integer, Integer> seen = new HashMap<>();
+
+    for (int i = 0; i < arr.length; i++) {
+
+        int needed = target - arr[i];
+
+        if (seen.containsKey(needed)) {
+            return new int[]{seen.get(needed), i};
+        }
+
+        seen.put(arr[i], i);
+    }
+
+    return new int[]{-1, -1};
+}
+```
+
+### Complexity
+
+```text
+Average Time : O(n)
+Space        : O(n)
+```
+
+### Important
+
+**Check before inserting current element.**
+
+Otherwise the same element could incorrectly be used twice.
+
+### Recognition
+
+```text
+pair + target + unsorted array
+```
+
+Think:
+
+```text
+needed = target - current
+```
+
+then HashMap.
+
+---
+
+# 04 — Math & Running State
+
+## 11. Missing Number
+
+### Problem
+
+Array contains `n` distinct numbers from `0` to `n`, with one number missing.
+
+```text
+Input:
+[3, 0, 1]
+
+Output:
+2
+```
+
+### Thinking
+
+Expected sum:
+
+```text
+0 + 1 + 2 + ... + n
+```
+
+Actual sum:
+
+```text
+sum of array
+```
+
+Missing:
+
+```text
+expected - actual
+```
+
+Expected sum formula:
+
+```text
+n * (n + 1) / 2
+```
+
+### Solution
+
+```java
+public static int missingNumber(int[] arr) {
+
+    int n = arr.length;
+
+    long expectedSum = (long) n * (n + 1) / 2;
+
+    long actualSum = 0;
+
+    for (int value : arr) {
+        actualSum += value;
+    }
+
+    return (int) (expectedSum - actualSum);
+}
+```
+
+### Why `(long)n`?
+
+This:
+
+```java
+long result = n * (n + 1);
+```
+
+can overflow as an `int` **before** being assigned to `long`.
+
+So cast before multiplication:
+
+```java
+(long) n * (n + 1)
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(1)
+```
+
+---
+
+## 12. Best Time to Buy and Sell Stock
+
+### Problem
+
+Buy once and sell once later. Find maximum profit.
+
+```text
+Input:
+[7, 1, 5, 3, 6, 4]
+
+Output:
+5
+```
+
+Buy at `1`, sell at `6`.
+
+### Brute Force
+
+Try every buy day with every later sell day.
+
+```text
+Time: O(n²)
+```
+
+### Optimized Thinking
+
+While scanning maintain:
+
+```text
+minPrice  → cheapest price seen so far
+maxProfit → best profit found so far
+```
+
+For each price:
+
+```text
+profit = currentPrice - minPrice
+```
+
+### Solution
+
+```java
+public static int maxProfit(int[] prices) {
+
+    int minPrice = prices[0];
+    int maxProfit = 0;
+
+    for (int i = 1; i < prices.length; i++) {
+
+        if (prices[i] < minPrice) {
+            minPrice = prices[i];
+        }
+
+        int currentProfit = prices[i] - minPrice;
+
+        if (currentProfit > maxProfit) {
+            maxProfit = currentProfit;
+        }
+    }
+
+    return maxProfit;
+}
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(1)
+```
+
+### Important Insight
+
+Don't simply find the global minimum first.
+
+Example:
+
+```text
+[2, 8, 1, 3]
+```
+
+Global minimum is `1`, giving profit `2`.
+
+But the best transaction is:
+
+```text
+buy 2
+sell 8
+profit 6
+```
+
+The order of days matters.
+
+---
+
+# 05 — Prefix Sum / Running Sum
+
+## 13. Range Sum Query
+
+### Problem
+
+Given:
+
+```text
+arr = [2, 4, 1, 7, 3, 6]
+```
+
+Find sum from index `L` to `R`.
+
+For:
+
+```text
+L = 1
+R = 4
+```
+
+Answer:
+
+```text
+4 + 1 + 7 + 3 = 15
+```
+
+### Brute Force
+
+Traverse `L → R` for every query.
+
+Worst case:
+
+```text
+O(n) per query
+```
+
+### Prefix Sum
+
+Build:
+
+```text
+arr:     [2, 4, 1, 7, 3, 6]
+prefix:  [2, 6, 7,14,17,23]
+```
+
+Meaning:
+
+```text
+prefix[i] = sum from index 0 through i
+```
+
+Range formula:
+
+```text
+if L == 0:
+    prefix[R]
+
+otherwise:
+    prefix[R] - prefix[L - 1]
+```
+
+Mental model:
+
+> Sum till R − Sum before L
+
+### Solution
+
+```java
+public static int rangeSum(int[] arr, int l, int r) {
+
+    int[] prefix = new int[arr.length];
+
+    int sum = 0;
+
+    for (int i = 0; i < arr.length; i++) {
+
+        sum += arr[i];
+        prefix[i] = sum;
+    }
+
+    if (l == 0) {
+        return prefix[r];
+    }
+
+    return prefix[r] - prefix[l - 1];
+}
+```
+
+### Complexity
+
+Building prefix:
+
+```text
+Time  : O(n)
+Space : O(n)
+```
+
+Each range query after prefix is built:
+
+```text
+O(1)
+```
+
+For `q` queries:
+
+```text
+O(n + q)
+```
+
+instead of approximately:
+
+```text
+O(q × n)
+```
+
+### Recognition
+
+```text
+Many range-sum queries
+```
+
+→ think **Prefix Sum**.
+
+---
+
+## 14. Equilibrium Index Using Prefix Sum
+
+### Problem
+
+Find an index where:
+
+```text
+left sum == right sum
+```
+
+Example:
+
+```text
+[1, 3, 5, 2, 2]
+       ↑
+     index 2
+```
+
+Left:
+
+```text
+1 + 3 = 4
+```
+
+Right:
+
+```text
+2 + 2 = 4
+```
+
+Answer:
+
+```text
+2
+```
+
+### Prefix Thinking
+
+For index `i`:
+
+```text
+leftSum =
+    i == 0 ? 0 : prefix[i - 1]
+```
+
+Right:
+
+```text
+rightSum =
+    totalSum - prefix[i]
+```
+
+### Solution
+
+```java
+public static int equilibriumIndex(int[] arr) {
+
+    int[] prefix = new int[arr.length];
+
+    int sum = 0;
+
+    for (int i = 0; i < arr.length; i++) {
+
+        sum += arr[i];
+        prefix[i] = sum;
+    }
+
+    int totalSum = prefix[prefix.length - 1];
+
+    for (int i = 0; i < arr.length; i++) {
+
+        int leftSum;
+
+        if (i == 0) {
+            leftSum = 0;
+        } else {
+            leftSum = prefix[i - 1];
+        }
+
+        int rightSum = totalSum - prefix[i];
+
+        if (leftSum == rightSum) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(n)
+```
+
+Two separate O(n) loops:
+
+```text
+O(n) + O(n)
+= O(2n)
+= O(n)
+```
+
+Not O(n²).
+
+---
+
+## 15. Running Sum of 1D Array
+
+### Problem
+
+```text
+Input:
+[3, 1, 2, 10, 1]
+
+Output:
+[3, 4, 6, 16, 17]
+```
+
+Each position contains the sum from index `0` through that index.
+
+### Thinking
+
+Maintain:
+
+```text
+sum
+```
+
+It must be declared **outside the loop**, otherwise it resets every iteration.
+
+### Solution
+
+```java
+public static int[] runningSum(int[] arr) {
+
+    int[] result = new int[arr.length];
+
+    int sum = 0;
+
+    for (int i = 0; i < arr.length; i++) {
+
+        sum += arr[i];
+        result[i] = sum;
+    }
+
+    return result;
+}
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(n)
+```
+
+Why O(n) space?
+
+Because:
+
+```java
+new int[arr.length]
+```
+
+grows with the input size.
+
+---
+
+## 16. Pivot Index — O(1) Extra Space
+
+### Problem
+
+Find an index where:
+
+```text
+leftSum == rightSum
+```
+
+Example:
+
+```text
+[1, 7, 3, 6, 5, 6]
+          ↑
+        index 3
+```
+
+Left:
+
+```text
+1 + 7 + 3 = 11
+```
+
+Right:
+
+```text
+5 + 6 = 11
+```
+
+### Better Thinking
+
+Instead of creating a prefix array, first calculate:
+
+```text
+totalSum
+```
+
+Then maintain:
+
+```text
+leftSum
+```
+
+At index `i`:
+
+```text
+rightSum =
+totalSum - leftSum - arr[i]
+```
+
+### Very Important
+
+At the beginning of iteration `i`:
+
+```text
+leftSum = sum of elements BEFORE i
+```
+
+Conceptually:
+
+```text
+leftSum = arr[0] + ... + arr[i-1]
+```
+
+After checking index `i`:
+
+```java
+leftSum += arr[i];
+```
+
+Why?
+
+Because the current element becomes part of the **left side for the next iteration**.
+
+### Solution
+
+```java
+public static int pivotIndex(int[] arr) {
+
+    int totalSum = 0;
+
+    for (int value : arr) {
+        totalSum += value;
+    }
+
+    int leftSum = 0;
+
+    for (int i = 0; i < arr.length; i++) {
+
+        int rightSum =
+                totalSum - leftSum - arr[i];
+
+        if (leftSum == rightSum) {
+            return i;
+        }
+
+        leftSum += arr[i];
+    }
+
+    return -1;
+}
+```
+
+### Complexity
+
+```text
+Time  : O(n)
+Space : O(1)
+```
+
+Again:
+
+```text
+first loop  = O(n)
+second loop = O(n)
+
+O(n) + O(n)
+= O(n)
+```
+
+---
+
+# Complexity Rules Learned So Far
+
+## O(1) Extra Space
+
+A fixed number of variables:
+
+```java
+int min;
+int max;
+int count;
+int left;
+int right;
+int sum;
+```
+
+Even if input becomes 1 million elements, the number of variables remains approximately the same.
+
+Therefore:
+
+```text
+O(1)
+```
+
+---
+
+## O(n) Extra Space
+
+Creating something whose size grows with the input:
+
+```java
+int[] result = new int[arr.length];
+
+HashSet<Integer> set = new HashSet<>();
+
+HashMap<Integer, Integer> map = new HashMap<>();
+```
+
+can require memory proportional to `n`.
+
+Therefore:
+
+```text
+O(n)
+```
+
+---
+
+# Pattern Recognition Cheat Sheet
+
+### Basic Traversal / Running State
+
+Think:
+
+```text
+Can I scan once and remember only what I need?
+```
+
+Examples:
+
+- Smallest element
+- Second largest
+- Maximum consecutive ones
+- Best time to buy/sell stock
+
+---
+
+### Two Pointers
+
+Think when working from:
+
+```text
+both ends
+```
+
+or when maintaining:
+
+```text
+read position + write position
+```
+
+Examples:
+
+- Reverse Array
+- Even/Odd Partition
+- Move Zeroes
+- Remove Duplicates
+
+---
+
+### HashSet
+
+Think:
+
+> Have I already seen this value?
+
+Example:
+
+- Contains Duplicate
+
+---
+
+### HashMap
+
+Think:
+
+> I need to remember a value AND information associated with it.
+
+Example:
+
+```text
+value → index
+```
+
+for Two Sum.
+
+---
+
+### Prefix Sum
+
+Think:
+
+> I repeatedly need sums over portions of an array.
+
+Especially:
+
+```text
+many L → R sum queries
+```
+
+Formula:
+
+```text
+rangeSum = prefix[R] - prefix[L-1]
+```
+
+with special handling when `L == 0`.
+
+---
+
+### Left Sum / Right Sum
+
+Think:
+
+```text
+rightSum =
+totalSum - leftSum - current
+```
+
+Example:
+
+- Pivot Index
+
+---
+
+# Current Progress
+
+Completed:
+
+```text
+16 array problems
+```
+
+Patterns practiced:
+
+```text
+✓ Basic traversal
+✓ Running state
+✓ Two pointers
+✓ Write pointer
+✓ HashSet
+✓ HashMap
+✓ Prefix sum
+✓ Left/right running sums
+✓ Basic Big-O analysis
+✓ Time-space trade-offs
+```
+
+The important goal isn't memorizing these 16 solutions.
+
+For every problem, try to remember:
+
+```text
+1. What is being asked?
+2. How would I solve a tiny example manually?
+3. What state/information do I need to remember?
+4. What is the brute-force approach?
+5. Can repeated work be avoided?
+6. Which pattern fits?
+7. Time complexity?
+8. Extra space complexity?
+```
+
+That thinking process is what we'll keep building toward Senior Java Backend / SWE interviews.

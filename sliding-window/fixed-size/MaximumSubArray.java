@@ -82,11 +82,7 @@ again:
 So:
 
 ```text
-new window sum
-=
-old window sum
-- outgoing element
-+ incoming element
+new window sum = old window sum - outgoing element + incoming element
 ```
 
 ---
@@ -261,11 +257,10 @@ windowSum =
 public class MaximumSubArray {
     public static int maxSumSubarray(int[] arr, int k) {
         int windowSum = 0;
-        int maxSum = windowSum;
         for(int i=0; i<k; i++){
             windowSum+=arr[i];
         }
-
+        int maxSum = windowSum;
         for(int i=k; i<arr.length; i++){
             windowSum = windowSum - arr[i-k] + arr[i];
             if(windowSum > maxSum){
